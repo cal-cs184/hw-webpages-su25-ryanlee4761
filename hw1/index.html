@@ -18,7 +18,7 @@
 
 			img {
 				display: inline-block;
-				width: 500px;
+				width: 300px;
 			}
 
 			body {
@@ -29,143 +29,259 @@
 	<body>
 		<div class="container">
 		<h1>CS184/284A Spring 2025 Homework 1 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+		<div style="text-align: center;">Names: Ryan Lee </div>
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cal-cs184.github.io/hw-webpages-su25-ryanlee4761/>cs184.eecs.berkeley.edu/sp25</a>
+		Link to webpage: <a href="https://cal-cs184.github.io/hw-webpages-su25-ryanlee4761/">https://cal-cs184.github.io/hw-webpages-su25-ryanlee4761/</a>
 		
 		<br>
 
-		Link to GitHub repository: (TODO) <a href="https://github.com/cal-cs184/hw-webpages-su25-ryanlee4761">cs184.eecs.berkeley.edu/sp25</a>
-
-		<figure>
-			<img src="lion.jpg" alt="Lion" style="width:50%"/>
-			<figcaption>You can add images with captions!</figcaption>
-		</figure>
+		Link to GitHub repository: <a href="https://github.com/cal-cs184/hw-webpages-su25-ryanlee4761">https://github.com/cal-cs184/hw-webpages-su25-ryanlee4761</a>
 
 		<!--
 		We've already added one heading per task, to make your write-up as navigable when grading. Please fit your write-up within these sections!
 		-->
 
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+		<p>This homework covered the implementations of a rasterizer, beginnging with basic triangle drawing and antialiasing via supersampling, to using barycentric coordinates for color interpolation and mipmaps with level + pixel sampling for texture mapping.</p>
+		<p>These techniques all come together to display almost any image or text or figure on any given computer screen. Being able to implement these and learn more about the implementation details was both frustrating and rewarding, but I enjoyed learning about things like the simplicity but effectiveness of supersampling as well as the usefulness of mipmaps for smoother displays.</p>
 
 		<h2>Task 1: Drawing Single-Color Triangles</h2>
-		To rasterize a given triangle, I first determine the bounding box containing the triangle. To do this, I find both the
+		<p>To rasterize a given triangle, I first determine the bounding box containing the triangle. To do this, I find both the
 		smallest and largest x/y values that would correspond to the corners of the box, and take the floors of the smallest and
 		the ceilings of the largest for rounding. With this, I iterate through each (x,y) coordinate in the box, find the center
-		of the pixel, and calculate whether a point passes all 3 line tests to determine whether or not to fill.
-		<br><br>
-		My algorithm is no worse because it implements the same algorithm described in lecture, where I take the bounding box as
+		of the pixel, and calculate whether a point passes all 3 line tests to determine whether or not to fill.</p>
+
+		<p>My algorithm is no worse because it implements the same algorithm described in lecture, where I take the bounding box as
 		defined and perform the line tests/calculations on each of the points contained. I don’t sample any pixels beyond the
-		bounding box, making my algorithm just as good.
-		<br><br>
-		<img src="img1.1.png">
-		<h2>extra</h2>
-		One small optimization I did was to precalculate some values. I initially was calculating -(xs - x0)(y1 - y0) + (ys +
-		y0)(x1 - x0) and the other line tests for each point. I changed this to precalculate x0*(y1 - y0) and y0*(x1 - x0) since
-		those are constant for each iteration and reduce the multiplication necessary for each loop.
-		<br>
-		<img src="timetable.png">
+		bounding box, making my algorithm just as good.</p>
+
+		<figure>
+			<img src="img1.1.png">
+			<figcaption>Screenshot of test4.svg</figcaption>
+		</figure>
+
+		<h3>extra credit!</h3>
+		<p>One small optimization I did was to precalculate some values. I initially was calculating \[ -(xs - x0)(y1 - y0) + (ys +
+		y0)(x1 - x0) \] and the other line tests for each iteration. I changed this to precalculate \( x0*(y1 - y0) \) and \( y0*(x1 - x0) \)
+		as well as the individual differences \(y1 - y0\) and \(x1 - x0\) since those are constant for each iteration and reduce the multiplication necessary for each loop.</p>
+
+		<table border="1px">
+			<thead>
+				<th>Image</th>
+				<th>Pre-optimization cycles</th>
+				<th>Post-optimization cycles</th>
+			</thead>
+			<tr>
+				<td>1</td>
+				<td>157</td>
+				<td>86</td>
+			</tr>
+			<tr>
+				<td>2</td>
+				<td>11496</td>
+				<td>10317</td>
+			</tr>
+			<tr>
+				<td>3</td>
+				<td>970</td>
+				<td>924</td>
+			</tr>
+			<tr>
+				<td>4</td>
+				<td>613</td>
+				<td>581</td>
+			</tr>
+			<tr>
+				<td>5</td>
+				<td>1838</td>
+				<td>1648</td>
+			</tr>
+			<tr>
+				<td>6 (nothing displayed)</td>
+				<td>13</td>
+				<td>25</td>
+			</tr>
+			<tr>
+				<td>7</td>
+				<td>1240</td>
+				<td>1041</td>
+			</tr>
+			<tr>
+				<td>8 (nothing displayed)</td>
+				<td>6</td>
+				<td>3</td>
+			</tr>
+		</table>
 
 		<h2>Task 2: Antialiasing by Supersampling</h2>
-		My supersampling algorithm is largely the same as the original rasterization algorithm implemented in step 1. The main
+		<p>My supersampling algorithm is largely the same as the original rasterization algorithm implemented in step 1. The main
 		change I made was that for each (x,y) coordinate, I iterate through subsections of the pixel. I determine the increments
 		by doing sqrt(supersample_rate) to get the number of samples in each dimension, then do 1/dimension to determine the
 		offset within the pixel. At each of these points, I perform the line test as previously specified in step 1. The results
 		for each of these iterations is saved to the sample_buffer which I modified to be sized based on the width, height, and
-		sample rate.
-		<br>
-		Supersampling is useful because it helps attenuate high frequencies visually and give the appearance of a smoother
-		surface or line.
-		<br>
-		Aside from modifying the rasterize_triangle function, I also modified the fill_pixel function to properly support
+		sample rate.</p>
+
+		<p>Supersampling is useful because it helps attenuate high frequencies visually and give the appearance of a smoother
+		surface or line.</p>
+
+		<p>Aside from modifying the rasterize_triangle function, I also modified the fill_pixel function to properly support
 		supersampling for lines/points. I also modified the resolve_to_framebuffer to support the sample_buffer layout and to
-		average the colors for a given pixel.
-		<br>
-		This supersampling helps to antialias triangles because for pixels that are partially contained in the triangle but not
+		average the colors for a given pixel.</p>
+		
+		<p>This supersampling helps to antialias triangles because for pixels that are partially contained in the triangle but not
 		including their centers, they are completely ignored with regular sampling. With supersampling, we can account for the
 		partial overlap and represent this with a slightly lighter color for that pixel, giving a smoother appearance and less
-		jagged edges.
-		<br><br>
-		These results are observed because the pixels along the displayed corner of the red triangle don’t always have their
-		center contained within the triangle. By increasing the supersampling rate, we can have a better representation of which
-		pixels are partially contained in the triangle and displaying a shade of the color to show this.
-
+		jagged edges.</p>
 		<br>
-		1
-		<img src="img2.1.png">
-		4
-		<img src="img2.2.png">
-		16
-		<img src="img2.3.png">
+
+		<p>These results are observed because the pixels along the displayed corner of the red triangle don’t always have their
+		center contained within the triangle. By increasing the supersampling rate, we can have a better representation of which
+		pixels are partially contained in the triangle and displaying a shade of the color to show this.</p>
+
+		<table display="center">
+			<thead>
+				<th>sample rate 1</th>
+				<th>sample rate 4</th>
+				<th>sample rate 16</th>
+			</thead>
+			<tr>
+				<td>
+					<img src="img2.1.png">
+				</td>
+				
+				<td>
+					<img src="img2.2.png">
+				</td>
+
+				<td>
+					<img src="img2.3.png">
+				</td>
+		</tr>
+		</table>
 
 		<h2>Task 3: Transforms</h2>
-		<img src="./img3.1.png">
+		<figure>
+			<img src="./img3.1.png">
+			<figcaption>A lovely #ccff00 figure running and pointing to the left</figcaption>
+		</figure>
+		
 
 		<h2>Task 4: Barycentric coordinates</h2>
-		Barycentric coordinates involve taking the value – in this case, colors – at the points of a triangle (or another shape)
+		<p>Barycentric coordinates involve taking the value – in this case, colors – at the points of a triangle (or another shape)
 		and using those values to estimate the values for the rest of the area within the triangle. This can be done for each
 		point by measuring the distance from a point to each of the vertices of the triangle, and using the distances to
 		determine how much we should weigh each of the vertices when calculating the value for the point. Once we have the
-		weights, we can take a weighted sum of each of the values to determine the value for our arbitrary point.
-		<img src="img4.1.png">
-		<img src="img4.2.png">
+		weights, we can take a weighted sum of each of the values to determine the value for our arbitrary point.</p>
+		<br>
+		<figure>
+			<img src="img4.1.png">
+			<figcaption>A very cool triangle with blending colors, thanks to barycentric things</figcaption>
+		</figure>
+		<figure>
+			<img src="img4.2.png">
+			<figcaption>test7.svg</figcaption>
+		</figure>
 
 		<h2>Task 5: "Pixel sampling" for texture mapping</h2>
-		Pixel sampling involves finding some correspondence between a pixel being displayed and some pixel on a texture being
+		<p>Pixel sampling involves finding some correspondence between a pixel being displayed and some pixel on a texture being
 		displayed. In pixel sampling, the display may be distorted relative to the texture, so we must find a mapping between
 		pixels in the two spaces. Given a triangle in both space and texture coordinates, I used barycentric coordinates to find
 		the distance of some point from each vertex of the triangle containing it. With this, I could calculate the relative
-		weight of each vertex on the point, and use these weights to scale from the texture coordinates.
-		<br>
-		Nearest pixel sampling involves using the calculated (u,v) coordinates and simply finding the nearest pixel in the
-		texture for use. On the other hand, bilinear sampling takes the surrounding 4 pixels and does a weighted sum based on
-		their distance to calculate an average color to use.
+		weight of each vertex on the point, and use these weights to scale from the texture coordinates.</p>
 
-		Nearest, 1 sample/px
-		<img src="img5n1.png"><br><br>
-		Nearest, 16 sample/px
-		<img src="img5n16.png"><br><br>
-		Bilinear, 1 sample/px
-		<img src="img5b1.png"> <br><br>
-		Bilinear, 16 sample/px
-		<img src="img5b16.png"><br>
+		<p>Nearest pixel sampling involves using the calculated (u,v) coordinates and simply finding the nearest pixel in the
+		texture for use. On the other hand, bilinear sampling takes the surrounding 4 pixels and does a weighted sum based on
+		their distance to calculate an average color to use.</p>
+
+		<table>
+			<tr>
+				<td>
+					<figure>
+						<img src="img5n1.png">
+						<figcaption>Nearest, 1 sample/px</figcaption>
+					</figure>
+				</td>
+				<td>
+					<figure>
+						<img src="img5n16.png">
+						<figcaption>Nearest, 16 sample/px</figcaption>
+					</figure>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<figure>
+						<img src="img5b1.png">
+						<figcaption>Bilinear, 1 sample/px</figcaption>
+					</figure>
+				</td>
+				<td>
+					<figure>
+						<img src="img5b16.png">
+						<figcaption>Bilinear, 16 sample/px</figcaption>
+					</figure>
+				</td>
+			</tr>
+		</table>
+
+		<p>In these images, the bilinear sampling is able to display the latitude lines with some opacity to allow for the sand
+		biome underneath to be visible. Meanwhile, the nearest sampling results in a solid white line that blocks on some
+		details.</p>
 
 
 		<h2>Task 6: "Level Sampling" with mipmaps for texture mapping</h2>
-		Level sampling uses similar techniques to pixel sampling where we have different space coordinates and texture
+		<p>Level sampling uses similar techniques to pixel sampling where we have different space coordinates and texture
 		coordinates. By mapping space coordinates to texture coordinates, we can determine how zoomed in we are to the texture,
 		which refers to our level. With this knowledge, we can choose different levels of quality when sampling for our image
-		that is optimal for displaying at the level of magnification we are at.
-		<br>
-		To implement this, I implemented a function to get the level based on the space coordinates and translating them to
+		that is optimal for displaying at the level of magnification we are at.</p>
+		
+		<p>To implement this, I implemented a function to get the level based on the space coordinates and translating them to
 		texture coordinates, as well as the resulting texture coordinates from incrementing the space coordinates. Then,
 		depending on the sp.lsm selected, I passed this level into the nearest or bilinear pixel sampling so the correct mipmap
 		level could be accessed. For the case of the linear level sampling, I made two calls to the pixel sampling and took a
-		weighted sum of them.
-		<br><br>
-		Increasing pixel sampling can be costly because it requires several arithmetic operations and memory accesses. However,
+		weighted sum of them.</p>
+		<br>
+
+		<p>Increasing pixel sampling can be costly because it requires several arithmetic operations and memory accesses. However,
 		a good pixel sampling can be useful for displaying textures well. Similarly, level sampling are extremely useful to
 		reduce artifacts in a texture with varying levels. However, doing linear level sampling compared to the nearest level
 		also has nearly double the number of arithmetic operations. Using supersampling can also be extremely costly and time
-		consuming, but the results are much smoother and clearer than with regular sampling or sampling at a smaller rate.
+		consuming, but the results are much smoother and clearer than with regular sampling or sampling at a smaller rate.</p>
 		
+		<table>
+			<tr>
+				<td>
+					<figure>
+						<img src="img6zn.png">
+						<figcaption>L_ZERO P_NEAREST</figcaption>
+					</figure>
+				</td>
+				<td>
+					<figure>
+						<img src="img6zl.png">
+						<figcaption>L_ZERO P_LINEAR</figcaption>
+					</figure>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<figure>
+						<img src="img6nn.png">
+						<figcaption>L_NEAREST P_NEAREST</figcaption>
+					</figure>
+				</td>
+				<td>
+					<figure>
+						<img src="img6nl.png">
+						<figcaption>L_NEAREST P_LINEAR</figcaption>
+					</figure>
+				</td>
+			</tr>
+		</table>
 
 		<h2>(Optional) Task 7: Extra Credit - Draw Something Creative!</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
-		</div>
+		<p>not attempted...</p>
 	</body>
 </html>
