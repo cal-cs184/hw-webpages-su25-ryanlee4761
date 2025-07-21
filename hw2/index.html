@@ -183,9 +183,39 @@
 		<img src="184 hw2.5.3.png" width="400px" />
 
 		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>I implemented loop subdivision using the provided outline. I initially calculated the final vertex positions for both
+		existing vertices and future vertices that would be interpolated between edges. I also marked these existing components
+		as isNew = false for future use. After this, I compiled a vector of existing edges and split them all, updating their
+		newPosition to be what I calculated earlier and while ensuring that only relevant edges were marked as isNew = true
+		(which caused much pain for me). Following this, I use this property of edges as well as the new/old vertex labels to
+		determine which edges to flip. Finally, I updated the positions of all vertices in the mesh for the final smooth images.</p>
+		<p>Sharp corners and edges are turned into slightly oblong curves since they aren’t nicely shown to be a smooth curve. By
+		pre-splitting the edges, these sharp edges/corners end up appearing smoother/flatter when performing loop subdivisions.</p>
+		<p>By pre-processing such that each face of the cube had the same number of edges, we could alleviate the effects of the
+		asymmetry since the balanced number of edges result in equal number of vertices and subdivisions for each face.</p>
+
+		<h3>Loop divisions of dae/cube.dae</h3>
+		<img src="hw2.6.1.png" width="400px" />
+		<img src="hw2.6.2.png" width="400px" />
+		<img src="hw2.6.3.png" width="400px" />
+		<img src="hw2.6.4.png" width="400px" />
+		<img src="hw2.6.5.png" width="400px" />
+		<img src="hw2.6.6.png" width="400px" />
+
+		<h3>Loop divisions of dae/cube.dae after split edges in one corner</h3>
+		<img src="hw2.6.7.1.png" width="400px" />
+		<img src="hw2.6.7.2.png" width="400px" />
+		<img src="hw2.6.7.3.png" width="400px" />
+		<img src="hw2.6.7.4.png" width="400px" />
+
+		<h3>Loop divisions of dae/cube.dae after having the same number of edges on each face</h3>
+		<img src="hw2.6.8.1.png" width="400px" />
+		<img src="hw2.6.8.2.png" width="400px" />
+		<img src="hw2.6.8.3.png" width="400px" />
+		<img src="hw2.6.8.4.png" width="400px" />
+		<img src="hw2.6.8.5.png" width="400px" />
 
 		<h2>(Optional) Section III: Potential Extra Credit - Art Competition: Model something Creative</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		man too bad
 	</body>
 </html>
