@@ -172,22 +172,60 @@
 						<img src="p3/bunny_s1_l4.png" width="400px" />
 						<figcaption>Lighting Sampling with 4 rays</figcaption>
 					</td>
-					<tr>
-						<td style="text-align: center;">
-							<img src="p3/bunny_s1_l16.png" width="400px" />
-							<figcaption>Lighting Sampling with 16 rays</figcaption>
-						</td>
-						<td style="text-align: center;">
-							<img src="p3/bunny_s1_l64.png" width="400px" />
-							<figcaption>Lighting Sampling with 64 rays</figcaption>
-						</td>
-					</tr>
+				</tr>
+				<tr>
+					<td style="text-align: center;">
+						<img src="p3/bunny_s1_l16.png" width="400px" />
+						<figcaption>Lighting Sampling with 16 rays</figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="p3/bunny_s1_l64.png" width="400px" />
+						<figcaption>Lighting Sampling with 64 rays</figcaption>
+					</td>
 				</tr>
 			</table>
 		</div>
 
 		<h2>Part 4: Global Illumination</h2>
-		<p>WIP unfortunately</p>
+		<p>To implement the indirect lighting function, I had to change how the lights were accumulated into the final L_out by
+		ensuring that we only did the recursive calls if the depth of the ray was greater than 1, meaning we could recurse, and
+		that the pixel had an intersection we could recursively bounce from. I also moved the one_bounce_radiance call into the
+		at_least_one_bounce_radiance call so that I could recursively accumulate all indirect lighting. Just like in task 3, I
+		got a random incident ray and calculated the relevant intersection. However, I also tracked the depth of the recursion
+		by saving it in the rays that were created, and each recursive call decreased the depth of the ray and returned the
+		lighting from calculating the radiance of those new rays. With Russian Roulette global illumination, I only did this
+		recursive call based on some coin flip as well. I finally scaled these recursive calls, scaled them, and accumulated and
+		returned the total L_out.</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+				<tr>
+					<td style="text-align: center;">
+						<img src="p4/globalspheres.png" width="400px" />
+						<figcaption>Global Illumination - Spheres</figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="p4/globalbunny.png" width="400px" />
+						<figcaption>Global Illumination - Bunny</figcaption>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: center;">
+						<img src="p4/directbunny.png" width="400px" />
+						<figcaption>Direct Illumination of Bunny</figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="p4/indirectbunny.png" width="400px" />
+						<figcaption>Indirect Illumination of Bunny</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<p>Unfortunately the rest of the writeup could not be completed in time with the slip days. Who knew that procrastination would end like this, or that not fully realizing that 
+			the course staff really did mean that the rendering would take a long time to complete!? crazy amirite!? (/s)
+		</p>
+		<p>Todo: render direct/indirect scenes with full samples/pixel, fix accumulation and render each mth bounce, output russian rouletter rendering, and compare rendered views with various samples/pixel</p>
 
 		<h2>Part 5: Adaptive Sampling</h2>
 		<p>WIP unfortunately</p>
@@ -200,17 +238,5 @@
 			For example, the use of "partition" to split the BVH tree was taken from advice given by ChatGPT. Generative AI was also used to describe the purpose or over-arching idea of some functions and math.
 			For example, ChatGPT was used to explain the reflection equation and what each function and parameter corresponded to.
 		</p>
-
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
-		</div>
 	</body>
 </html>
